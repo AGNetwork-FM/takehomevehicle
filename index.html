@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AGN Take-Home Vehicle Program</title>
+<meta name="description" content="AGN Law Enforcement Take-Home Vehicle Program policy agreement display.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #04070d;
+    --panel: #0b1322;
+    --ink: #e9eef6;
+    --muted: #93a1b7;
+    --line: rgba(255,255,255,.08);
+    --gold: #d9b45b;
+    --gold-soft: rgba(217,180,91,.14);
+    --blue: #2f6bff;
+    --red: #ff3b4e;
+    --green: #3ddc97;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+  }
+  body {
+    color: var(--ink);
+    font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- Fixed 1920x1080 stage, scaled to fit ---------- */
+  body { display: flex; align-items: center; justify-content: center; }
+  #stage {
+    position: relative; flex: none;
+    width: 1920px; height: 1080px;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    background:
+      radial-gradient(1200px 600px at 12% -10%, rgba(47,107,255,.20), transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, rgba(217,180,91,.12), transparent 60%),
+      radial-gradient(1000px 700px at 80% 120%, rgba(255,59,78,.08), transparent 60%),
+      linear-gradient(180deg, #070c17 0%, #04070d 100%);
+  }
+  #stage::before {
+    content: ""; position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse at center, #000 30%, transparent 85%);
+    -webkit-mask-image: radial-gradient(ellipse at center, #000 30%, transparent 85%);
+    pointer-events: none;
+  }
+
+  /* ---------- Light bar ---------- */
+  .lightbar {
+    position: relative; height: 6px; flex: none;
+    background: linear-gradient(90deg, var(--red) 0 50%, var(--blue) 50% 100%);
+    overflow: hidden;
+  }
+  .lightbar::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.85), transparent);
+    width: 30%;
+    animation: sweep 3.2s ease-in-out infinite;
+  }
+  .lightglow {
+    position: absolute; top: 0; left: 0; right: 0; height: 120px;
+    background:
+      radial-gradient(500px 90px at 25% 0, rgba(255,59,78,.35), transparent 70%),
+      radial-gradient(500px 90px at 75% 0, rgba(47,107,255,.35), transparent 70%);
+    animation: flash 3.2s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes sweep { 0% { transform: translateX(-110%); } 100% { transform: translateX(380%); } }
+  @keyframes flash { 0%,100% { opacity: .55; } 50% { opacity: 1; } }
+
+  /* ---------- Header ---------- */
+  header {
+    position: relative; flex: none;
+    display: flex; align-items: center; gap: 28px;
+    padding: 30px 48px 26px;
+  }
+  .emblem { width: 104px; height: 116px; flex: none; filter: drop-shadow(0 6px 24px rgba(217,180,91,.35)); }
+  .titles { flex: 1; }
+  .eyebrow {
+    font-family: "Oswald", sans-serif;
+    font-size: 17px; letter-spacing: 6px; text-transform: uppercase;
+    color: var(--gold); margin: 0 0 4px;
+  }
+  h1 {
+    margin: 0;
+    font-family: "Oswald", sans-serif; font-weight: 700;
+    font-size: 64px; line-height: 1; letter-spacing: 1.5px; text-transform: uppercase;
+    background: linear-gradient(180deg, #ffffff 0%, #c8d3e6 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .purpose {
+    margin: 12px 0 0; max-width: 1100px;
+    font-size: 18px; line-height: 1.45; color: #b9c5d8;
+  }
+  .header-tags { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+  .tag {
+    font-family: "Oswald", sans-serif; text-transform: uppercase; letter-spacing: 2.5px;
+    font-size: 15px; padding: 8px 16px; border-radius: 6px;
+    border: 1px solid var(--line); background: rgba(255,255,255,.03); color: var(--muted);
+  }
+  .tag.gold { color: var(--gold); border-color: rgba(217,180,91,.45); background: var(--gold-soft); }
+  .header-rule {
+    position: absolute; left: 48px; right: 48px; bottom: 0; height: 1px;
+    background: linear-gradient(90deg, var(--gold), rgba(217,180,91,.2) 40%, transparent);
+  }
+
+  /* ---------- Body ---------- */
+  .body {
+    position: relative; flex: 1; min-height: 0;
+    display: grid; grid-template-columns: 1fr 560px; grid-template-rows: minmax(0, 1fr); gap: 28px;
+    padding: 26px 48px 22px;
+  }
+  .grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr 1fr;
+    gap: 18px; min-height: 0;
+  }
+
+  .card {
+    position: relative; overflow: hidden;
+    padding: 20px 20px 16px;
+    border-radius: 16px;
+    background: linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.018));
+    border: 1px solid var(--line);
+    box-shadow: 0 20px 40px -24px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.05);
+    animation: fadein .6s ease-out both;
+  }
+  .card::before {
+    content: ""; position: absolute; left: 0; top: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--gold), transparent 75%);
+  }
+  .card .num {
+    position: absolute; right: 16px; top: 8px;
+    font-family: "Oswald", sans-serif; font-weight: 700; font-size: 64px; line-height: 1;
+    color: rgba(255,255,255,.05);
+  }
+  .card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; padding-right: 8px; }
+  .icon {
+    width: 40px; height: 40px; flex: none; border-radius: 10px;
+    display: grid; place-items: center;
+    background: var(--gold-soft); border: 1px solid rgba(217,180,91,.35);
+  }
+  .icon svg { width: 22px; height: 22px; stroke: var(--gold); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  h2 {
+    margin: 0;
+    font-family: "Oswald", sans-serif; font-weight: 500;
+    font-size: 20px; line-height: 1.1; letter-spacing: .8px; text-transform: uppercase;
+  }
+  .body-text { margin: 0; font-size: 16.5px; line-height: 1.55; color: #d6deea; }
+  .lead { margin: 0 0 6px; font-size: 14.5px; color: var(--muted); }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li {
+    position: relative; padding-left: 18px; margin: 0 0 5px;
+    font-size: 14.5px; line-height: 1.34; color: #d6deea;
+  }
+  li::before {
+    content: ""; position: absolute; left: 2px; top: .58em;
+    width: 7px; height: 7px; transform: rotate(45deg);
+    background: var(--gold); border-radius: 1px;
+  }
+  .sub {
+    font-family: "Oswald", sans-serif; font-size: 14px; letter-spacing: 1.5px; text-transform: uppercase;
+    margin: 8px 0 6px; display: flex; align-items: center; gap: 8px;
+  }
+  .sub.ok { color: var(--green); }
+  .sub.no { color: var(--red); margin-top: 12px; }
+  ul.ok li::before { background: var(--green); }
+  ul.no li::before { background: var(--red); }
+  .warn {
+    margin-top: 10px; padding: 9px 12px; border-radius: 8px;
+    font-size: 14px; line-height: 1.35;
+    background: rgba(255,59,78,.10); border: 1px solid rgba(255,59,78,.35); color: #ffc9cf;
+  }
+
+  /* ---------- Sign-off panel ---------- */
+  .sign {
+    position: relative; display: flex; flex-direction: column;
+    border-radius: 20px; padding: 24px 28px 22px; min-height: 0;
+    background:
+      radial-gradient(500px 260px at 100% 0%, rgba(217,180,91,.18), transparent 70%),
+      linear-gradient(180deg, #101b30, #0a1222);
+    border: 1px solid rgba(217,180,91,.45);
+    box-shadow: 0 0 0 1px rgba(217,180,91,.12), 0 30px 60px -30px rgba(0,0,0,.9), 0 0 70px -20px rgba(217,180,91,.40);
+  }
+  .req {
+    align-self: flex-start;
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: "Oswald", sans-serif; font-size: 14px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: #0a0f19; background: var(--gold); padding: 6px 12px; border-radius: 5px;
+  }
+  .req .dot { width: 8px; height: 8px; border-radius: 50%; background: #0a0f19; }
+  .sign h2.big { font-size: 40px; font-weight: 700; letter-spacing: 1.5px; margin: 12px 0 8px; white-space: nowrap; }
+  .sign h2.big span { color: var(--gold); }
+  .sign .intro { margin: 0 0 14px; font-size: 17.5px; line-height: 1.45; color: #d3dcea; font-weight: 500; }
+  .sign .intro strong { color: #fff; }
+
+  .steps { display: flex; flex-direction: column; gap: 10px; }
+  .step {
+    display: grid; grid-template-columns: 46px 1fr; gap: 14px; align-items: center;
+    padding: 10px 14px; border-radius: 12px;
+    background: rgba(255,255,255,.035); border: 1px solid var(--line);
+  }
+  .step .n {
+    width: 46px; height: 46px; border-radius: 50%;
+    display: grid; place-items: center;
+    font-family: "Oswald", sans-serif; font-weight: 600; font-size: 22px;
+    color: var(--gold); border: 2px solid rgba(217,180,91,.6); background: rgba(217,180,91,.08);
+  }
+  .step .t { font-size: 18px; line-height: 1.35; color: #e6ecf5; font-weight: 500; }
+  .step .t b { color: #fff; }
+  .step.final { border-color: rgba(61,220,151,.45); background: rgba(61,220,151,.08); }
+  .step.final .n { color: var(--green); border-color: rgba(61,220,151,.7); background: rgba(61,220,151,.1); }
+
+  .path {
+    margin: 14px 0 16px; display: flex; align-items: center; gap: 8px; flex-wrap: nowrap;
+  }
+  .chip {
+    font-family: "Oswald", sans-serif; font-size: 16px; letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 7px 14px; border-radius: 6px;
+    background: linear-gradient(180deg, #2a5ad6, #1d419e); color: #fff;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.2);
+  }
+  .chev { color: var(--gold); font-size: 22px; line-height: 1; }
+
+  .ack {
+    margin-top: auto; padding: 14px 18px 12px;
+    border-left: 3px solid var(--gold); border-radius: 0 12px 12px 0;
+    background: rgba(0,0,0,.25);
+  }
+  .ack .label {
+    font-family: "Oswald", sans-serif; font-size: 13px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 6px;
+  }
+  .ack p { margin: 0; font-size: 15px; line-height: 1.45; color: #d6deea; }
+
+  /* ---------- Footer ---------- */
+  footer {
+    position: relative; flex: none;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 48px 18px;
+    font-family: "Oswald", sans-serif; text-transform: uppercase; letter-spacing: 3px;
+    font-size: 14px; color: var(--muted);
+    border-top: 1px solid var(--line);
+  }
+  footer .mid { color: var(--gold); }
+
+  @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="lightglow"></div>
+  <div class="lightbar"></div>
+
+  <header>
+    <svg class="emblem" viewBox="0 0 104 116" aria-hidden="true">
+      <defs>
+        <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#f3d68c"/><stop offset=".55" stop-color="#d9b45b"/><stop offset="1" stop-color="#9c7a2c"/>
+        </linearGradient>
+        <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#16294d"/><stop offset="1" stop-color="#0a1428"/>
+        </linearGradient>
+      </defs>
+      <path d="M52 2 L98 18 V56 C98 84 78 104 52 114 C26 104 6 84 6 56 V18 Z" fill="url(#g1)"/>
+      <path d="M52 10 L90 23 V56 C90 79 74 96 52 105 C30 96 14 79 14 56 V23 Z" fill="url(#g2)"/>
+      <path d="M52 30 l6.2 12.6 13.9 2 -10 9.8 2.4 13.8 -12.5 -6.6 -12.5 6.6 2.4 -13.8 -10 -9.8 13.9 -2 Z" fill="url(#g1)"/>
+      <text x="52" y="92" text-anchor="middle" font-family="Oswald, sans-serif" font-weight="700" font-size="15" letter-spacing="3" fill="#d9b45b">AGN</text>
+    </svg>
+    <div class="titles">
+      <p class="eyebrow">AGN Law Enforcement &nbsp;&bull;&nbsp; Policy Agreement</p>
+      <h1>Take-Home Vehicle Program</h1>
+      <p class="purpose">Policy agreement for officers and deputies assigned a department take-home vehicle.</p>
+    </div>
+    <div class="header-tags">
+      <div class="tag gold">Officers &amp; Deputies</div>
+      <div class="tag">Privilege &mdash; Not a Right</div>
+    </div>
+    <div class="header-rule"></div>
+  </header>
+
+  <div class="body">
+    <div class="grid">
+
+      <article class="card" style="animation-delay:0.05s">
+        <div class="num">01</div>
+        <div class="card-head">
+          <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></div>
+          <h2>Purpose</h2>
+        </div>
+        <p class="body-text">The Take-Home Vehicle Program is intended to increase realism, accountability, vehicle ownership responsibility, and officer immersion while maintaining department standards and operational readiness.</p>
+      </article>
+
+      <article class="card" style="animation-delay:0.12s">
+        <div class="num">02</div>
+        <div class="card-head">
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
+          <h2>Eligibility</h2>
+        </div>
+        <ul>
+          <li>Participation is a privilege, not a right.</li>
+          <li>Officers must be in good standing.</li>
+          <li>Officers must not have recent disciplinary action.</li>
+          <li>Command staff may approve or deny participation at their discretion.</li>
+          <li>Participation may be revoked at any time.</li>
+        </ul>
+      </article>
+
+      <article class="card" style="animation-delay:0.19s">
+        <div class="num">03</div>
+        <div class="card-head">
+          <div class="icon"><svg viewBox="0 0 24 24"><circle cx="8" cy="14" r="4"/><path d="M11 11l9-9M17 5l2 2M15 7l2 2"/></svg></div>
+          <h2>Vehicle Ownership</h2>
+        </div>
+        <ul>
+          <li>Vehicles remain the property of the department and government.</li>
+          <li>Officers are assigned a vehicle; they do not own it outright.</li>
+          <li>Vehicle assignments may be changed based on department needs.</li>
+          <li>Officers may be required to surrender their assigned vehicle upon request.</li>
+        </ul>
+      </article>
+
+      <article class="card" style="animation-delay:0.26s">
+        <div class="num">04</div>
+        <div class="card-head">
+          <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+          <h2>Officer Responsibilities</h2>
+        </div>
+        <p class="lead">Officers assigned a vehicle shall:</p>
+        <ul>
+          <li>Maintain the vehicle in good condition.</li>
+          <li>Keep the vehicle clean and presentable.</li>
+          <li>Ensure required equipment remains stocked and operational.</li>
+          <li>Report damage, theft, vandalism, or mechanical issues promptly.</li>
+          <li>Secure the vehicle when unattended.</li>
+          <li>Operate the vehicle professionally and within department policy.</li>
+        </ul>
+      </article>
+
+      <article class="card" style="animation-delay:0.33s">
+        <div class="num">05</div>
+        <div class="card-head">
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></div>
+          <h2>Vehicle Modifications</h2>
+        </div>
+        <ul>
+          <li>All modifications require department approval.</li>
+          <li>Only approved liveries, equipment, lighting, and accessories may be installed.</li>
+          <li>Unauthorized modifications are prohibited.</li>
+          <li>Specialty vehicles require additional approval.</li>
+        </ul>
+      </article>
+
+      <article class="card" style="animation-delay:0.40s">
+        <div class="num">06</div>
+        <div class="card-head">
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M5 16l1.5-5A2 2 0 0 1 8.4 9.5h7.2a2 2 0 0 1 1.9 1.5L19 16"/><rect x="3" y="16" width="18" height="4" rx="1.5"/><circle cx="7" cy="18" r=".5"/><circle cx="17" cy="18" r=".5"/></svg></div>
+          <h2>Vehicle Use</h2>
+        </div>
+        <div class="sub ok">&#10003; May be used</div>
+        <ul class="ok">
+          <li>While on duty.</li>
+          <li>While traveling to and from approved duty assignments.</li>
+          <li>During approved roleplay activities.</li>
+        </ul>
+        <div class="sub no">&#10005; May not be used</div>
+        <ul class="no">
+          <li>For personal criminal activity.</li>
+          <li>For unauthorized racing, stunting, or reckless operation.</li>
+          <li>For non-department purposes outside approved roleplay.</li>
+        </ul>
+      </article>
+
+      <article class="card" style="animation-delay:0.47s">
+        <div class="num">07</div>
+        <div class="card-head">
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3L2 20h20z"/><path d="M12 10v4M12 17v.5"/></svg></div>
+          <h2>Damage &amp; Reporting</h2>
+        </div>
+        <p class="lead">Officers must immediately report:</p>
+        <ul>
+          <li>Theft</li>
+          <li>Vandalism</li>
+          <li>Significant collisions</li>
+          <li>Missing equipment</li>
+          <li>Vehicle malfunctions</li>
+        </ul>
+        <div class="warn">Failure to report incidents may result in disciplinary action.</div>
+      </article>
+
+      <article class="card" style="animation-delay:0.54s">
+        <div class="num">08</div>
+        <div class="card-head">
+          <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg></div>
+          <h2>Revocation of Privileges</h2>
+        </div>
+        <p class="lead">Take-home privileges may be revoked for:</p>
+        <ul>
+          <li>Failure to maintain the vehicle.</li>
+          <li>Repeated damage caused by negligence.</li>
+          <li>Misuse of department assets.</li>
+          <li>Policy violations.</li>
+          <li>Department disciplinary action.</li>
+          <li>Inactivity.</li>
+        </ul>
+      </article>
+
+
+    </div>
+
+    <aside class="sign">
+      <div class="req"><span class="dot"></span> Required Before Purchase</div>
+      <h2 class="big">Sign Before <span>You Buy</span></h2>
+      <p class="intro">Officers and deputies opt into the program by acknowledging this policy in their MDT. <strong>It must be signed before you can purchase a take-home vehicle.</strong></p>
+
+      <div class="steps">
+        <div class="step"><div class="n">1</div><div class="t">Open your <b>MDT</b> in game.</div></div>
+        <div class="step"><div class="n">2</div><div class="t">Go to the <b>Fleet</b> tab, then <b style="white-space:nowrap">Policy &amp; Sign-Off</b>.</div></div>
+        <div class="step"><div class="n">3</div><div class="t">Review the policy and <b>acknowledge</b> it.</div></div>
+        <div class="step final"><div class="n">4</div><div class="t">Purchase your vehicle at the <b>dealership</b> right next to this display.</div></div>
+      </div>
+
+      <div class="path">
+        <span class="chip">MDT</span><span class="chev">&rsaquo;</span>
+        <span class="chip">Fleet</span><span class="chev">&rsaquo;</span>
+        <span class="chip">Policy &amp; Sign-Off</span>
+      </div>
+
+      <div class="ack">
+        <div class="label">Acknowledgement</div>
+        <p>&ldquo;I understand that participation in the AGN Take-Home Vehicle Program is a privilege and not a right. I agree to maintain my assigned vehicle, comply with department policy, immediately report damage or issues, and understand that vehicle privileges may be revoked at any time by department command staff.&rdquo;</p>
+      </div>
+    </aside>
+  </div>
+
+  <footer>
+    <span>AGN Law Enforcement</span>
+    <span class="mid">Take-Home Vehicle Program</span>
+    <span>Department Property &bull; Assigned, Not Owned</span>
+  </footer>
+</div>
+
+<script>
+  function fit() {
+    var s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+    document.getElementById('stage').style.zoom = s;
+  }
+  window.addEventListener('resize', fit);
+  fit();
+</script>
+</body>
+</html>
